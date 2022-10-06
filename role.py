@@ -1,12 +1,12 @@
 """
-Programme réalisé par nom, prénom, classe
+Programme réalisé par moi
 """
 import pygame
 from os.path import join,dirname
 
 #variables du niveau
 NB_TILES = 666   #nombre de tiles a chager (ici de 00.png à 26.png) 27 au total !!
-TITLE_SIZE=32   #definition du dessin (carré)
+TITLE_SIZE=64   #definition du dessin (carré)
 largeur=8       #hauteur du niveau
 hauteur=8       #largeur du niveau
 tiles=[]       #liste d'images tiles
@@ -87,7 +87,7 @@ class Personnage(pygame.sprite.Sprite):
 #on rajoute une rangée de 32 pixels en bas de la fentre pour afficher le score d'ou (hauteur +1)
 pygame.init()
 fenetre = pygame.display.set_mode((largeur*TITLE_SIZE, (hauteur+1)*TITLE_SIZE))
-pygame.display.set_caption("Dungeon")
+pygame.display.set_caption("Dungeon | RPG")
 font = pygame.font.Font('freesansbold.ttf', 20)
 
 
@@ -97,8 +97,8 @@ def chargetiles(tiles):
     fonction permettant de charger les images tiles dans une liste tiles[]
     """
     for n in range(0,NB_TILES):
-        #print('data/'+str(n)+'.png',join(dirname(__file__),'jeuderole/data/'+str(n)+'.png'))
-        tiles.append(pygame.image.load(join(dirname(__file__),'data/'+str(n)+'.png'))) #attention au chemin
+        #print('data/'+str(n)+'.png')
+        tiles.append(pygame.transform.scale(pygame.image.load(join(dirname(__file__),'data/'+str(n)+'.png')),(64,64))) #attention au chemin
 
 
 def afficheNiveau(niveau):
