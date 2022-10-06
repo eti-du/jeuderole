@@ -2,6 +2,7 @@
 Programme réalisé par nom, prénom, classe
 """
 import pygame
+from os.path import join,dirname
 
 #variables du niveau
 NB_TILES = 666   #nombre de tiles a chager (ici de 00.png à 26.png) 27 au total !!
@@ -96,8 +97,8 @@ def chargetiles(tiles):
     fonction permettant de charger les images tiles dans une liste tiles[]
     """
     for n in range(0,NB_TILES):
-        #print('data/'+str(n)+'.png')
-        tiles.append(pygame.image.load('data/'+str(n)+'.png')) #attention au chemin
+        #print('data/'+str(n)+'.png',join(dirname(__file__),'jeuderole/data/'+str(n)+'.png'))
+        tiles.append(pygame.image.load(join(dirname(__file__),'data/'+str(n)+'.png'))) #attention au chemin
 
 
 def afficheNiveau(niveau):
@@ -127,9 +128,9 @@ fenetre.fill((0,0,0))   #efface la fenetre
 chargetiles(tiles)  #chargement des images
 
 
-perso = Personnage([1,1],TITLE_SIZE,"data/perso.png",collisions)
-perso2 = Personnage([3,3],TITLE_SIZE,"data/perso.png",collisions)
-perso3 = Personnage([3,5],TITLE_SIZE,"data/perso.png",collisions)
+perso = Personnage([1,1],TITLE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso2 = Personnage([3,3],TITLE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso3 = Personnage([3,5],TITLE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 
 aventuriers = pygame.sprite.Group()
 aventuriers.add(perso)
