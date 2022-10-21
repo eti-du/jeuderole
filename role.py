@@ -3,6 +3,7 @@ Programme d'un jeu de role réalisé par moi
 """
 import pygame
 from os.path import join,dirname
+from random import randint,choice
 
 #variables
 NB_TILES = 666   #nombre de tuiles a charger (ici de 00.png à 666.png) 667 au total !
@@ -90,7 +91,7 @@ collisions = [
 [  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],
 [  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]]
 
-class Personnage(pygame.sprite.Sprite):
+class Moveable_element(pygame.sprite.Sprite):
     def __init__(self,position,size,img,collisions):
         super().__init__()
         self.image = pygame.transform.scale(pygame.image.load(img),(64,64))
@@ -158,9 +159,9 @@ def afficheScore(score):
     window.blit(scoreAafficher,(10,window_y-64))
     pass
 #==Personnages==
-from random import randint,choice
-class Personnage2:
-    def __init__(self,nom,vie,xp,niveau):
+class Personnage(Moveable_element):
+    def __init__(self,nom,vie,xp,niveau,position,size,img,collisions):
+        super().__init__(position,size,img,collisions)
         self.nom=nom
         self.vie=vie
         self.maxVie=vie
@@ -186,9 +187,9 @@ class Personnage2:
         #retourne vrai si le personnage est mort
         return self.vie<=0
 
-class Guerrier(Personnage2):
-    def __init__(self,nom,force,vie,xp,niveau):
-        super().__init__(nom,vie,xp,niveau)
+class Guerrier(Personnage):
+    def __init__(self,nom,force,vie,xp,niveau,position,size,img,collisions):
+        super().__init__(nom,vie,xp,niveau,position,size,img,collisions)
         self.force=force
     def augmenterForce(self):
         self.force += 1
@@ -205,10 +206,10 @@ class Guerrier(Personnage2):
         self.monterExperience(degats)
         if adversaire.estMort():
             self.augmenterForce()
-        print("degat sur le mechant",degats)
-class Magicien(Personnage2):
-    def __init__(self,nom,mana,vie,xp,niveau):
-        super().__init__(nom,vie,xp,niveau)
+        afficheScore(str(degats)+" degat sur le mechant")
+class Magicien(Personnage):
+    def __init__(self,nom,mana,vie,xp,niveau,position,size,img,collisions):
+        super().__init__(nom,vie,xp,niveau,position,size,img,collisions)
         self.maxMana=mana
         self.mana=mana
     def augmenterMana(self):#augmente de 10 self.maxMana
@@ -228,7 +229,7 @@ class Magicien(Personnage2):
     def combat(self,adversaire):
         attaque=randint(1, 4)
         degats=attaque*self.niveau*2-adversaire.niveau
-        print("degat du magicien sur le méchant",degats)
+        afficheScore(str(degats) + " dégats infligé du magicien sur le méchant")
         #inflige des dégats au mechant si celui-ci est vivant
         # et que le magicien dispose de nana
         #incrémente le nombre de points d’expérience correspondant aux dégâts infligés
@@ -267,20 +268,26 @@ def duel(combattant,mechant):
         combattant.combat(mechant)
         mechant.combat(combattant)
         i += 1
+        pygame.display.update()
+    if combattant.estVivant():
+        afficheScore(combattant.nom +"a gagné")
+    else:
+        afficheScore(mechant.nom+"a gagné")
+    pygame.display.update()
 """
 duel(magot,mechant)
 print(combattant)
 print(magot)
 print(mechant)"""
 
-combattant=Guerrier("Linflas",2,20,10,1)
-mechant=Guerrier("Chaos",2,30,10,2)
-magot=Magicien("Chani",30,30,10,2)
+#combattant=Guerrier("Linflas",2,20,10,1)
+#mechant=Guerrier("Chaos",2,30,10,2)
+#magot=Magicien("Chani",30,30,10,2)
 #==Fin personnages==
 #création des personnages
-perso = Personnage([1,1],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso2 = Personnage([3,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso3 = Personnage([3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso = Guerrier("Chani",30,30,1,1,[1,1],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso2 = Guerrier("Gandalf",10,100,1,1,[3,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 
 aventuriers = pygame.sprite.Group()
 aventuriers.add(perso)
@@ -309,7 +316,8 @@ while loop==True:
     if mechants.has(perso2):
         if pygame.sprite.collide_rect(perso, perso2):
             perso.gauche()
-            print("collision")
+            print("ATTENTION COLLISION")
+            duel(perso,perso2)
             mechants.remove(perso2)
             perso2 = 0
 
