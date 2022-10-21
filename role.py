@@ -186,7 +186,7 @@ class Personnage2:
         #retourne vrai si le personnage est mort
         return self.vie<=0
 
-class Guerrier(Personnage):
+class Guerrier(Personnage2):
     def __init__(self,nom,force,vie,xp,niveau):
         super().__init__(nom,vie,xp,niveau)
         self.force=force
@@ -206,7 +206,7 @@ class Guerrier(Personnage):
         if adversaire.estMort():
             self.augmenterForce()
         print("degat sur le mechant",degats)
-class Magicien(Personnage):
+class Magicien(Personnage2):
     def __init__(self,nom,mana,vie,xp,niveau):
         super().__init__(nom,vie,xp,niveau)
         self.maxMana=mana
