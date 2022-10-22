@@ -16,6 +16,7 @@ pygame.init()
 window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN) #window = pygame.display.set_mode((largeur*TILE_SIZE, (hauteur+1)*TILE_SIZE))
 pygame.display.set_caption("Role Playing Game | The Mysterious Hill")
 font = pygame.font.Font('freesansbold.ttf', 40)
+fontmn = pygame.font.Font('freesansbold.ttf', 15)
 fontG = pygame.font.Font('freesansbold.ttf', 120)
 window_x,window_y = pygame.display.Info().current_w,pygame.display.Info().current_h
 window.blit(fontG.render("CHARGEMENT …", True, (113,52,134)),(window_x//4,window_y//2-50))
@@ -27,15 +28,19 @@ hauteur = min(14,window_y//TILE_SIZE-3) #largeur du niveau
 from assets.map import niveau,collisions,decor
 
 class Moveable_element(pygame.sprite.Sprite):
-    def __init__(self,position,size,img,collisions):
+    def __init__(self,name,position,size,img,collisions):
         super().__init__()
+        self.name = name
         self.image = pygame.transform.scale(pygame.image.load(img),(64,64))
+        self.image.blit(fontmn.render(self.name[:8], True, (20, 23, 34)),(0,0))
         self.rect = self.image.get_rect()
         self.size=size
         self.collisions=collisions
         self.x,self.y=position
         self.rect.x=self.x*size
         self.rect.y=self.y*size
+        self.rightdirection = True
+
 
     def testCollisionsDecor(self,x,y):
         if (self.collisions[int(self.y+y)+1][int(self.x+x)+1]==0):
@@ -45,10 +50,16 @@ class Moveable_element(pygame.sprite.Sprite):
     def droite(self):
         self.testCollisionsDecor(1,0)
         self.rect.x=self.x*self.size
+        if not self.rightdirection:
+            self.image = pygame.transform.flip(self.image,True,False)
+            self.rightdirection = True
 
     def gauche(self):
         self.testCollisionsDecor(-1,0)
         self.rect.x=self.x*self.size
+        if self.rightdirection:
+            self.image = pygame.transform.flip(self.image,True,False)
+            self.rightdirection = False
 
     def haut(self):
         self.testCollisionsDecor(0,-1)
@@ -96,7 +107,7 @@ def afficheScore(score):
 #==Personnages==
 class Personnage(Moveable_element):
     def __init__(self,nom,vie,xp,niveau,position,size,img,collisions):
-        super().__init__(position,size,img,collisions)
+        super().__init__(nom,position,size,img,collisions)
         self.nom=nom
         self.vie=vie
         self.maxVie=vie
@@ -114,7 +125,7 @@ class Personnage(Moveable_element):
             self.vie -= vie
     def monterExperience(self,xp):#ajoute 2 points d’expérience, Augmente d’un niveau tous les 10 xp, Exemple 30xp = niveau 3
         self.xp += xp
-        self.niveau = self.xp//10
+        self.niveau = self.xp//10+1
     def estVivant(self):
         #retourne vrai si le personnage est vivant
         return self.vie>0
@@ -141,7 +152,7 @@ class Guerrier(Personnage):
         self.monterExperience(degats)
         if adversaire.estMort():
             self.augmenterForce()
-        afficheScore(str(degats)+" degat sur le mechant")
+        afficheScore(str(degats)+" dégats infligés à "+adversaire.nom)
 class Magicien(Personnage):
     def __init__(self,nom,mana,vie,xp,niveau,position,size,img,collisions):
         super().__init__(nom,vie,xp,niveau,position,size,img,collisions)
@@ -164,7 +175,7 @@ class Magicien(Personnage):
     def combat(self,adversaire):
         attaque=randint(1, 4)
         degats=attaque*self.niveau*2-adversaire.niveau
-        afficheScore(str(degats) + " dégats infligé du magicien sur le méchant")
+        afficheScore(str(degats) + " dégats infligés du magicien sur le méchant")
         #inflige des dégats au mechant si celui-ci est vivant
         # et que le magicien dispose de nana
         #incrémente le nombre de points d’expérience correspondant aux dégâts infligés
@@ -201,14 +212,20 @@ def duel(combattant,mechant):
     i = 0
     while mechant.estVivant() and combattant.estVivant() or i>2000:
         combattant.combat(mechant)
-        mechant.combat(combattant)
-        i += 1
         pygame.display.update()
+        pygame.time.wait(1000)
+        pygame.draw.rect(window,(90,0,0),(10,window_y-64,800,50))
+        mechant.combat(combattant)
+        pygame.display.update()
+        pygame.time.wait(1000)
+        pygame.draw.rect(window,(110,0,0),(10,window_y-64,800,50))
+        i += 1
     if combattant.estVivant():
-        afficheScore(combattant.nom +"a gagné")
+        afficheScore(combattant.nom +" a gagné")
     else:
-        afficheScore(mechant.nom+"a gagné")
+        afficheScore(mechant.nom+" a gagné")
     pygame.display.update()
+    pygame.time.wait(3000)
 """
 duel(magot,mechant)
 print(combattant)
