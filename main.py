@@ -16,7 +16,7 @@ pygame.init()
 window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN) #window = pygame.display.set_mode((tiles_xmax*TILE_SIZE, (tiles_ymax+1)*TILE_SIZE))
 pygame.display.set_caption("Role Playing Game | The Mysterious Hill")
 font = pygame.font.Font(join(dirname(__file__),'assets\\font\\CourierNew.ttf'), 40)
-fontmn = pygame.font.Font('freesansbold.ttf', 15)
+fontmn = pygame.font.Font(None, 18)
 fontG = pygame.font.Font(None, 120)
 window_x,window_y = pygame.display.Info().current_w,pygame.display.Info().current_h
 window.blit(fontG.render("CHARGEMENT …", True, (113,52,134)),(window_x//4,window_y//2-50))
@@ -53,7 +53,7 @@ class Moveable_element(pygame.sprite.Sprite):
 
     def droite(self):
         self.testCollisionsDecor(1,0)
-        self.rect.x=self.x*self.size
+        #self.rect.x=self.x*self.size
         self.offset_x += 1
         if not self.rightdirection:
             self.image = pygame.transform.flip(self.image,True,False)
@@ -61,7 +61,7 @@ class Moveable_element(pygame.sprite.Sprite):
 
     def gauche(self):
         self.testCollisionsDecor(-1,0)
-        self.rect.x=self.x*self.size
+        #self.rect.x=self.x*self.size
         self.offset_x -= 1
         if self.rightdirection:
             self.image = pygame.transform.flip(self.image,True,False)
@@ -69,13 +69,20 @@ class Moveable_element(pygame.sprite.Sprite):
 
     def haut(self):
         self.testCollisionsDecor(0,-1)
-        self.rect.y=self.y*self.size
-        self.offset_y -= 1
+        if 0 < self.offset_y+tiles_ymax:
+            self.offset_y -= 1
+            self.rect.y = tiles_ymax//2
+        else:
+            self.rect.y=self.y*self.size
 
     def bas(self):
         self.testCollisionsDecor(0,1)
-        self.rect.y=self.y*self.size
-        self.offset_y += 1
+        if len(niveau) > self.offset_y+tiles_ymax:
+            self.offset_y += 1
+            self.rect.y = tiles_ymax//2
+        else:
+            self.rect.y=self.y*self.size
+
     
 """
     def droite(self):
@@ -119,15 +126,27 @@ def load_tiles():
         tiles.append(ligne)
     return tiles
 
-def afficheNiveau(niveau):
+def draw_tiles(niveau):
     """
     affiche le terrain à partir de la matrice "niveau"
+
+    a = player.offset_y (début de la boucle pour)
+    si la longueur du niveau est inférieur à a plus la longueur maximale de tuiles placable
+    (si le joueur arrive à la fin du monde)
+    alors a = longueur du niveau moins longueur maximale de tuiles
+    si a >= 0
+    alors a = player.offset_y
+    si a < 0 (si le joueur est au début du monde)
+    alors a = 0
+    b = a + tiles_ymax (fin de la boucle pour)
     """
-    for y in range(player.offset_y,tiles_ymax+player.offset_y):
-        for x in range(player.offset_x,tiles_xmax+player.offset_x):
-            window.blit(tiles[niveau[y][x]//23][niveau[y][x]%23],((x-player.offset_x)*TILE_SIZE,(y-player.offset_y)*TILE_SIZE))
+    for_1 = max(min(player.offset_y,len(niveau) - tiles_ymax),-3)
+    for_2 = max(min(player.offset_x,len(niveau[0]) - tiles_xmax),-5)
+    for y in range(for_1,for_1+tiles_ymax):
+        for x in range(for_2,for_2+tiles_xmax):
+            window.blit(tiles[niveau[y][x]//23][niveau[y][x]%23],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
             if (decor[y][x]>0):
-                window.blit(tiles[decor[y][x]//23][decor[y][x]%23],(x*TILE_SIZE,y*TILE_SIZE))
+                window.blit(tiles[decor[y][x]//23][decor[y][x]%23],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
     pygame.draw.rect(window,(231,231,231),(tiles_xmax*64,0,15,window_y))
     pygame.draw.rect(window,(231,231,231),(0,tiles_ymax*64,window_x,15))
     pygame.draw.rect(window,(0,0,0),(tiles_xmax*64+7,0,3,window_y+8))
@@ -251,6 +270,7 @@ perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname
 perso4 = Personnage("Gentil",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso5 = Personnage("EhOh",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso6 = Personnage("Le Chat",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso6 = Personnage("Max",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 
 aventuriers = pygame.sprite.Group()
 aventuriers.add(player)
@@ -284,7 +304,7 @@ while loop==True:
             perso2 = 0
 
     window.fill((0,0,0))
-    afficheNiveau(niveau) #affiche le niveau
+    draw_tiles(niveau) #affiche le niveau
     afficheScore("Score")
     aventuriers.update()
     aventuriers.draw(window)
