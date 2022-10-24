@@ -10,10 +10,10 @@ NB_TILES = 666   #nombre de tuiles a charger (ici de 00.png à 666.png) 667 au t
 TILE_SIZE = 64   #definition du dessin (carré)
 tiles=[]         #liste des images des tuiles
 clock = pygame.time.Clock()
-#La taille de la fenetre ne dépend pas de la largeur et de la hauteur du niveau
+#La taille de la fenetre ne dépend pas de la longueur et de la hauteur du niveau
 #On rajoute une rangée de quelques pixels en bas de la fentre pour afficher le score
 pygame.init()
-window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN) #window = pygame.display.set_mode((largeur*TILE_SIZE, (hauteur+1)*TILE_SIZE))
+window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN) #window = pygame.display.set_mode((tiles_xmax*TILE_SIZE, (tiles_ymax+1)*TILE_SIZE))
 pygame.display.set_caption("Role Playing Game | The Mysterious Hill")
 font = pygame.font.Font(join(dirname(__file__),'assets\\font\\CourierNew.ttf'), 40)
 fontmn = pygame.font.Font('freesansbold.ttf', 15)
@@ -22,8 +22,11 @@ window_x,window_y = pygame.display.Info().current_w,pygame.display.Info().curren
 window.blit(fontG.render("CHARGEMENT …", True, (113,52,134)),(window_x//4,window_y//2-50))
 pygame.display.update()
 
-largeur = min(20,window_x//TILE_SIZE-5) #hauteur du niveau
-hauteur = min(14,window_y//TILE_SIZE-3) #largeur du niveau
+tiles_xmax = min(20,window_x//TILE_SIZE-5) #hauteur du niveau
+tiles_ymax = min(14,window_y//TILE_SIZE-3) #longueur du niveau
+
+offset_x = tiles_xmax//2
+offset_y = tiles_ymax//2
 
 from assets.map import niveau,collisions,decor
 
@@ -40,6 +43,7 @@ class Moveable_element(pygame.sprite.Sprite):
         self.rect.x=self.x*size
         self.rect.y=self.y*size
         self.rightdirection = True
+        self.offset_x,self.offset_y = 0,0#self.x,self.y
 
 
     def testCollisionsDecor(self,x,y):
@@ -47,6 +51,33 @@ class Moveable_element(pygame.sprite.Sprite):
             self.x+=x*0.1
             self.y+=y*0.1
 
+    def droite(self):
+        self.testCollisionsDecor(1,0)
+        self.rect.x=self.x*self.size
+        self.offset_x += 1
+        if not self.rightdirection:
+            self.image = pygame.transform.flip(self.image,True,False)
+            self.rightdirection = True
+
+    def gauche(self):
+        self.testCollisionsDecor(-1,0)
+        self.rect.x=self.x*self.size
+        self.offset_x -= 1
+        if self.rightdirection:
+            self.image = pygame.transform.flip(self.image,True,False)
+            self.rightdirection = False
+
+    def haut(self):
+        self.testCollisionsDecor(0,-1)
+        self.rect.y=self.y*self.size
+        self.offset_y -= 1
+
+    def bas(self):
+        self.testCollisionsDecor(0,1)
+        self.rect.y=self.y*self.size
+        self.offset_y += 1
+    
+"""
     def droite(self):
         self.testCollisionsDecor(1,0)
         self.rect.x=self.x*self.size
@@ -68,6 +99,8 @@ class Moveable_element(pygame.sprite.Sprite):
     def bas(self):
         self.testCollisionsDecor(0,1)
         self.rect.y=self.y*self.size
+    
+    """
 
 def load_tiles():
     """
@@ -90,15 +123,15 @@ def afficheNiveau(niveau):
     """
     affiche le terrain à partir de la matrice "niveau"
     """
-    for y in range(hauteur):
-        for x in range(largeur):
-            window.blit(tiles[niveau[y][x]//23][niveau[y][x]%23],(x*TILE_SIZE,y*TILE_SIZE))
+    for y in range(player.offset_y,tiles_ymax+player.offset_y):
+        for x in range(player.offset_x,tiles_xmax+player.offset_x):
+            window.blit(tiles[niveau[y][x]//23][niveau[y][x]%23],((x-player.offset_x)*TILE_SIZE,(y-player.offset_y)*TILE_SIZE))
             if (decor[y][x]>0):
                 window.blit(tiles[decor[y][x]//23][decor[y][x]%23],(x*TILE_SIZE,y*TILE_SIZE))
-    pygame.draw.rect(window,(231,231,231),(largeur*64,0,15,window_y))
-    pygame.draw.rect(window,(231,231,231),(0,hauteur*64,window_x,15))
-    pygame.draw.rect(window,(0,0,0),(largeur*64+7,0,3,window_y+8))
-    pygame.draw.rect(window,(0,0,0),(0,hauteur*64+7,window_x,3))
+    pygame.draw.rect(window,(231,231,231),(tiles_xmax*64,0,15,window_y))
+    pygame.draw.rect(window,(231,231,231),(0,tiles_ymax*64,window_x,15))
+    pygame.draw.rect(window,(0,0,0),(tiles_xmax*64+7,0,3,window_y+8))
+    pygame.draw.rect(window,(0,0,0),(0,tiles_ymax*64+7,window_x,3))
 
 def afficheScore(score):
     """
@@ -110,7 +143,11 @@ def afficheScore(score):
 #==Personnages==
 class Personnage(Moveable_element):
     def __init__(self,nom,vie,xp,niveau,position,size,img,collisions):
-        super().__init__(nom,position,size,img,collisions)
+        if position == False:
+            position = (tiles_xmax//2,tiles_ymax//2)
+            Moveable_element.__init__(self,nom,position,size,img,collisions)
+        else:
+            Moveable_element.__init__(self,nom,position,size,img,collisions)
         self.nom=nom
         self.vie=vie
         self.maxVie=vie
@@ -208,7 +245,7 @@ def duel(combattant,mechant):
 
 #==Fin personnages==
 #création des personnages
-perso = Guerrier("Ash",30,100,1,1,[1,1],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+player = Guerrier("Ash",30,100,1,1,False,TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso2 = Guerrier("Gandalf",10,100,1,1,[3,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso4 = Personnage("Gentil",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
@@ -216,7 +253,7 @@ perso5 = Personnage("EhOh",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data
 perso6 = Personnage("Le Chat",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 
 aventuriers = pygame.sprite.Group()
-aventuriers.add(perso)
+aventuriers.add(player)
 aventuriers.add(perso3)
 
 mechants = pygame.sprite.Group()
@@ -230,20 +267,19 @@ while loop==True:
             loop = False
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] or keys[pygame.K_z]:
-        perso.haut()
+        player.haut()
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        perso.droite()
+        player.droite()
     if keys[pygame.K_LEFT] or keys[pygame.K_q]:
-        perso.gauche()
+        player.gauche()
     if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        perso.bas()
+        player.bas()
     if keys[pygame.K_ESCAPE]:
         loop = False
     if mechants.has(perso2):
-        if pygame.sprite.collide_rect(perso, perso2):
-            perso.gauche()
+        if pygame.sprite.collide_rect(player, perso2):
             print("ATTENTION COLLISION")
-            duel(perso,perso2)
+            duel(player,perso2)
             mechants.remove(perso2)
             perso2 = 0
 
