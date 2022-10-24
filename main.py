@@ -15,7 +15,7 @@ clock = pygame.time.Clock()
 pygame.init()
 window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN) #window = pygame.display.set_mode((largeur*TILE_SIZE, (hauteur+1)*TILE_SIZE))
 pygame.display.set_caption("Role Playing Game | The Mysterious Hill")
-font = pygame.font.Font(None, 40)
+font = pygame.font.Font(join(dirname(__file__),'assets\\font\\CourierNew.ttf'), 40)
 fontmn = pygame.font.Font('freesansbold.ttf', 15)
 fontG = pygame.font.Font(None, 120)
 window_x,window_y = pygame.display.Info().current_w,pygame.display.Info().current_h
@@ -147,7 +147,7 @@ class Guerrier(Personnage):
         Monte si nécessaire en niveau en fonction du nombre de points xp retire de la vie au méchant
         """
         attaque=randint(1, 4)
-        degats=attaque*self.niveau*self.force-adversaire.niveau
+        degats=attaque*self.niveau*self.force
         if adversaire.estVivant():
             adversaire.retirerVie(degats)
         self.monterExperience(degats)
@@ -177,7 +177,7 @@ class Magicien(Personnage):
         retire de la vie au méchant et diminue le mana
         """
         attaque=randint(1,4)
-        degats=attaque*self.niveau*2-adversaire.niveau
+        degats=attaque*self.niveau*2
         afficheScore(str(degats) + " dégats infligés du magicien sur le méchant")
         if adversaire.estVivant() and self.mana>0:
             adversaire.vie -= degats
@@ -208,11 +208,12 @@ def duel(combattant,mechant):
 
 #==Fin personnages==
 #création des personnages
-perso = Guerrier("Ash",30,30,1,1,[1,1],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso = Guerrier("Ash",30,100,1,1,[1,1],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso2 = Guerrier("Gandalf",10,100,1,1,[3,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso3 = Personnage("Gentil",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso3 = Personnage("EhOh",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso4 = Personnage("Gentil",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso5 = Personnage("EhOh",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso6 = Personnage("Le Chat",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 
 aventuriers = pygame.sprite.Group()
 aventuriers.add(perso)
