@@ -89,39 +89,13 @@ class Moveable_element(pygame.sprite.Sprite):
             else:
                 self.offset_y += 1
 
-    
-"""
-    def droite(self):
-        self.testCollisionsDecor(1,0)
-        self.rect.x=self.x*self.size
-        if not self.rightdirection:
-            self.image = pygame.transform.flip(self.image,True,False)
-            self.rightdirection = True
-
-    def gauche(self):
-        self.testCollisionsDecor(-1,0)
-        self.rect.x=self.x*self.size
-        if self.rightdirection:
-            self.image = pygame.transform.flip(self.image,True,False)
-            self.rightdirection = False
-
-    def haut(self):
-        self.testCollisionsDecor(0,-1)
-        self.rect.y=self.y*self.size
-
-    def bas(self):
-        self.testCollisionsDecor(0,1)
-        self.rect.y=self.y*self.size
-    
-    """
-
 def load_tiles():
     """
     fonction permettant de charger les images de tuiles dans la matrice tiles
     """
     global TILE_SIZE
     tile_size = 32
-    file = join(dirname(__file__),"data/base.png")
+    file = join(dirname(__file__),"assets/textures/tilesetV2.png")
     image = pygame.image.load(file).convert_alpha()
     size = image.get_size()
     tiles = []
@@ -149,11 +123,11 @@ def draw_tiles(niveau):
     window.fill((0,0,0))
     for_1 = max(min(player.offset_y,len(niveau) - tiles_ymax),-3)
     for_2 = max(min(player.offset_x,len(niveau[0]) - tiles_xmax),-5)
-    for y in range(for_1,for_1+tiles_ymax):
-        for x in range(for_2,for_2+tiles_xmax):
-            window.blit(tiles[niveau[y][x]//23][niveau[y][x]%23],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
+    for y in range(for_1,min(len(niveau),for_1+tiles_ymax)):
+        for x in range(for_2,min(len(niveau[0]),for_2+tiles_xmax)):
+            window.blit(tiles[niveau[y][x]//56][niveau[y][x]%56],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
             if (decor[y][x]>0):
-                window.blit(tiles[decor[y][x]//23][decor[y][x]%23],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
+                window.blit(tiles[decor[y][x]//56][decor[y][x]%56],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
     pygame.draw.rect(window,(231,231,231),(tiles_xmax*64,0,15,window_y))
     pygame.draw.rect(window,(231,231,231),(0,tiles_ymax*64,window_x,15))
     pygame.draw.rect(window,(0,0,0),(tiles_xmax*64+7,0,3,window_y+8))
