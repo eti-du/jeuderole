@@ -35,7 +35,7 @@ class Moveable_element(pygame.sprite.Sprite):
         super().__init__()
         self.name = name
         self.image = pygame.transform.scale(pygame.image.load(img),(64,64))
-        self.image.blit(fontmn.render(self.name[:8], True, (20, 23, 34)),(0,0))
+        self.image.blit(fontmn.render(self.name[:9], True, (20, 23, 34)),(0,0))
         self.rect = self.image.get_rect()
         self.size=size
         self.collisions=collisions
@@ -43,45 +43,51 @@ class Moveable_element(pygame.sprite.Sprite):
         self.rect.x=self.x*size
         self.rect.y=self.y*size
         self.rightdirection = True
-        self.offset_x,self.offset_y = 0,0#self.x,self.y
+        self.offset_x,self.offset_y = 0,0
 
-
-    def testCollisionsDecor(self,x,y):
-        if (self.collisions[int(self.y+y)+1][int(self.x+x)+1]==0):
-            self.x+=x*0.1
-            self.y+=y*0.1
+    def collision(self,x,y):
+        if (self.collisions[int(self.offset_y+self.y+y)][int(self.offset_x+self.x+x)]==0):
+            return False
+        return True
 
     def droite(self):
-        self.testCollisionsDecor(1,0)
-        #self.rect.x=self.x*self.size
-        self.offset_x += 1
+        if not self.collision(1,0):
+            if self.offset_x > len(niveau[0]) - tiles_xmax:
+                self.x+=0.2
+                self.rect.x=self.x*self.size
+            else:
+                self.offset_x += 1
+
         if not self.rightdirection:
             self.image = pygame.transform.flip(self.image,True,False)
             self.rightdirection = True
 
     def gauche(self):
-        self.testCollisionsDecor(-1,0)
-        #self.rect.x=self.x*self.size
-        self.offset_x -= 1
+        if not self.collision(-1,0):
+            if self.x*2 > tiles_xmax:
+                self.x-=0.2
+                self.rect.x=self.x*self.size
+            else:
+                self.offset_x -= 1
         if self.rightdirection:
             self.image = pygame.transform.flip(self.image,True,False)
             self.rightdirection = False
 
     def haut(self):
-        self.testCollisionsDecor(0,-1)
-        if 0 < self.offset_y+tiles_ymax:
-            self.offset_y -= 1
-            self.rect.y = tiles_ymax//2
-        else:
-            self.rect.y=self.y*self.size
+        if not self.collision(0,-1):
+            if self.y*2 > tiles_ymax:
+                self.y-=0.2
+                self.rect.y=self.y*self.size
+            else:
+                self.offset_y -= 1
 
     def bas(self):
-        self.testCollisionsDecor(0,1)
-        if len(niveau) > self.offset_y+tiles_ymax:
-            self.offset_y += 1
-            self.rect.y = tiles_ymax//2
-        else:
-            self.rect.y=self.y*self.size
+        if not self.collision(0,1):
+            if self.offset_y > len(niveau) - tiles_ymax:
+                self.y+=0.2
+                self.rect.y=self.y*self.size
+            else:
+                self.offset_y += 1
 
     
 """
@@ -159,6 +165,7 @@ def afficheScore(score):
     """
     scoreAafficher = font.render(str(score), True, (20, 235, 134))
     window.blit(scoreAafficher,(tiles_xmax*TILE_SIZE+20,20))
+    window.blit(font.render(str(player.collision(0,0)), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,60))
 #==Personnages==
 class Personnage(Moveable_element):
     def __init__(self,nom,vie,xp,niveau,position,size,img,collisions):
