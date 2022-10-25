@@ -140,6 +140,7 @@ def draw_tiles(niveau):
     alors a = 0
     b = a + tiles_ymax (fin de la boucle pour)
     """
+    window.fill((0,0,0))
     for_1 = max(min(player.offset_y,len(niveau) - tiles_ymax),-3)
     for_2 = max(min(player.offset_x,len(niveau[0]) - tiles_xmax),-5)
     for y in range(for_1,for_1+tiles_ymax):
@@ -157,8 +158,7 @@ def afficheScore(score):
     affiche le score
     """
     scoreAafficher = font.render(str(score), True, (20, 235, 134))
-    window.blit(scoreAafficher,(10,window_y-64))
-    pass
+    window.blit(scoreAafficher,(tiles_xmax*TILE_SIZE+20,20))
 #==Personnages==
 class Personnage(Moveable_element):
     def __init__(self,nom,vie,xp,niveau,position,size,img,collisions):
@@ -303,7 +303,6 @@ while loop==True:
             mechants.remove(perso2)
             perso2 = 0
 
-    window.fill((0,0,0))
     draw_tiles(niveau) #affiche le niveau
     afficheScore("Score")
     aventuriers.update()
