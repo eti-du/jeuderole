@@ -27,12 +27,12 @@ tiles_ymax = min(14,window_y//TILE_SIZE-3) #longueur du niveau
 
 offset_x = tiles_xmax//2
 offset_y = tiles_ymax//2
+from assets.map import ground,collisions,layer_1
+collisions = [[  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]]
 
-from assets.map import niveau,collisions,decor
-
-class Moveable_element(pygame.sprite.Sprite):
+class Moveable_element:#(pygame.sprite.Sprite):
     def __init__(self,name,position,size,img,collisions):
-        super().__init__()
+        #super().__init__()
         self.name = name
         self.image = pygame.transform.scale(pygame.image.load(img),(64,64))
         self.image.blit(fontmn.render(self.name[:9], True, (20, 23, 34)),(0,0))
@@ -52,7 +52,7 @@ class Moveable_element(pygame.sprite.Sprite):
 
     def droite(self):
         if not self.collision(1,0):
-            if self.offset_x > len(niveau[0]) - tiles_xmax:
+            if self.offset_x > len(ground[0]) - tiles_xmax:
                 self.x+=0.2
                 self.rect.x=self.x*self.size
             else:
@@ -83,7 +83,7 @@ class Moveable_element(pygame.sprite.Sprite):
 
     def bas(self):
         if not self.collision(0,1):
-            if self.offset_y > len(niveau) - tiles_ymax:
+            if self.offset_y > len(ground) - tiles_ymax:
                 self.y+=0.2
                 self.rect.y=self.y*self.size
             else:
@@ -100,15 +100,15 @@ def load_tiles():
     size = image.get_size()
     tiles = []
     for y in range(0, size[1]//tile_size):
-        ligne = []
+        #ligne = []
         for x in range(0, size[0]//tile_size):
-            ligne.append(pygame.transform.scale(image.subsurface(x*tile_size, y*tile_size, tile_size, tile_size),(TILE_SIZE,TILE_SIZE)))
-        tiles.append(ligne)
+            tiles.append(pygame.transform.scale(image.subsurface(x*tile_size, y*tile_size, tile_size, tile_size),(TILE_SIZE,TILE_SIZE)))
+        #tiles.append(ligne)
     return tiles
 
-def draw_tiles(niveau):
+def draw_tiles(ground):
     """
-    affiche le terrain à partir de la matrice "niveau"
+    affiche le terrain à partir de la matrice "ground"
 
     a = player.offset_y (début de la boucle pour)
     si la longueur du niveau est inférieur à a plus la longueur maximale de tuiles placable
@@ -121,13 +121,18 @@ def draw_tiles(niveau):
     b = a + tiles_ymax (fin de la boucle pour)
     """
     window.fill((0,0,0))
-    for_1 = max(min(player.offset_y,len(niveau) - tiles_ymax),-3)
-    for_2 = max(min(player.offset_x,len(niveau[0]) - tiles_xmax),-5)
-    for y in range(for_1,min(len(niveau),for_1+tiles_ymax)):
-        for x in range(for_2,min(len(niveau[0]),for_2+tiles_xmax)):
-            window.blit(tiles[niveau[y][x]//56][niveau[y][x]%56],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
-            if (decor[y][x]>0):
-                window.blit(tiles[decor[y][x]//56][decor[y][x]%56],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
+    for_1 = max(min(player.offset_y,len(ground) - tiles_ymax),-3)
+    for_2 = max(min(player.offset_x,len(ground[0]) - tiles_xmax),-5)
+    for y in range(for_1,min(len(ground),for_1+tiles_ymax)):
+        for x in range(for_2,min(len(ground[0]),for_2+tiles_xmax)):
+            window.blit(tiles[ground[y][x]],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
+            if len(layer_1)>y and len(layer_1[0])>x and layer_1[y][x]>0:
+                window.blit(tiles[layer_1[y][x]],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
+    for i in range(1,len(characters)):
+        if player.offset_x+tiles_xmax >= characters[i].x >= player.offset_x and player.offset_y+tiles_ymax >=characters[i].y >= player.offset_y:
+            window.blit(characters[i].image,((-player.offset_x+characters[i].x)*TILE_SIZE,(-player.offset_y+characters[i].y)*TILE_SIZE))
+    window.blit(player.image,((tiles_xmax//2)*TILE_SIZE,(tiles_ymax//2)*TILE_SIZE))
+    
     pygame.draw.rect(window,(231,231,231),(tiles_xmax*64,0,15,window_y))
     pygame.draw.rect(window,(231,231,231),(0,tiles_ymax*64,window_x,15))
     pygame.draw.rect(window,(0,0,0),(tiles_xmax*64+7,0,3,window_y+8))
@@ -246,21 +251,24 @@ def duel(combattant,mechant):
 #==Fin personnages==
 #création des personnages
 player = Guerrier("Ash",30,100,1,1,False,TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso2 = Guerrier("Gandalf",10,100,1,1,[3,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso2 = Guerrier("Gandalf",10,100,1,1,[8,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso4 = Personnage("Gentil",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso5 = Personnage("EhOh",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso6 = Personnage("Le Chat",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso6 = Personnage("Max",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-
+characters = [player,perso2,perso3,perso4,perso5,perso6]
+"""
 aventuriers = pygame.sprite.Group()
 aventuriers.add(player)
 aventuriers.add(perso3)
 
 mechants = pygame.sprite.Group()
 mechants.add(perso2)
-
+"""
 tiles = load_tiles() #Charge les images
+tiles[0]=tiles[113]
+tiles[0]=tiles[0]
 loop=True
 while loop==True:
     for event in pygame.event.get():
@@ -277,19 +285,20 @@ while loop==True:
         player.bas()
     if keys[pygame.K_ESCAPE]:
         loop = False
-    if mechants.has(perso2):
-        if pygame.sprite.collide_rect(player, perso2):
+    if True:#mechants.has(perso2):
+        if int(player.x+player.offset_x) == perso2.x and int(player.y+player.offset_y) == perso2.y:#pygame.sprite.collide_rect(player, perso2):
             print("ATTENTION COLLISION")
             duel(player,perso2)
-            mechants.remove(perso2)
+            #mechants.remove(perso2)
             perso2 = 0
+            del perso2
 
-    draw_tiles(niveau) #affiche le niveau
+    draw_tiles(ground) #affiche le niveau
     afficheScore("Score")
-    aventuriers.update()
-    aventuriers.draw(window)
-    mechants.update()
-    mechants.draw(window)
+    #aventuriers.update()
+    #aventuriers.draw(window)
+    #mechants.update()
+    #mechants.draw(window)
     pygame.display.update() #mets à jour la fenetre graphique
     clock.tick(30)
 pygame.quit()
