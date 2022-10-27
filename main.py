@@ -27,8 +27,19 @@ tiles_ymax = min(14,window_y//TILE_SIZE-3) #longueur du niveau
 
 offset_x = tiles_xmax//2
 offset_y = tiles_ymax//2
-from assets.map import ground,collisions,layer_1
-collisions = [[  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1],[  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]]
+from assets.map import ground,layer_1
+
+collisions = []
+for i in range(len(ground)):
+    ligne = []
+    for j in range(len(ground[0])):
+        if 112<=ground[i][j]<=131 or 56<=ground[i][j]<=75 or 168<=ground[i][j]<=187 or 224<=ground[i][j]<=242:
+            ligne.append(0)
+        else:
+            ligne.append(1)
+    ligne[-1] = 1
+    collisions.append(ligne)
+collisions.append([1]*len(ground[0]))
 
 class Moveable_element:#(pygame.sprite.Sprite):
     def __init__(self,name,position,size,img,collisions):
@@ -121,8 +132,8 @@ def draw_tiles(ground):
     b = a + tiles_ymax (fin de la boucle pour)
     """
     window.fill((0,0,0))
-    for_1 = max(min(player.offset_y,len(ground) - tiles_ymax),-3)
-    for_2 = max(min(player.offset_x,len(ground[0]) - tiles_xmax),-5)
+    for_1 = max(min(player.offset_y,len(ground) - tiles_ymax),-10)
+    for_2 = max(min(player.offset_x,len(ground[0]) - tiles_xmax),-10)
     for y in range(for_1,min(len(ground),for_1+tiles_ymax)):
         for x in range(for_2,min(len(ground[0]),for_2+tiles_xmax)):
             window.blit(tiles[ground[y][x]],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
@@ -258,6 +269,7 @@ perso5 = Personnage("EhOh",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data
 perso6 = Personnage("Le Chat",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso6 = Personnage("Max",10,100,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 characters = [player,perso2,perso3,perso4,perso5,perso6]
+ennemis = [perso2]
 """
 aventuriers = pygame.sprite.Group()
 aventuriers.add(player)
@@ -285,13 +297,13 @@ while loop==True:
         player.bas()
     if keys[pygame.K_ESCAPE]:
         loop = False
-    if True:#mechants.has(perso2):
+    if ennemis[0] == perso2:#mechants.has(perso2):
         if int(player.x+player.offset_x) == perso2.x and int(player.y+player.offset_y) == perso2.y:#pygame.sprite.collide_rect(player, perso2):
             print("ATTENTION COLLISION")
             duel(player,perso2)
             #mechants.remove(perso2)
-            perso2 = 0
-            del perso2
+            ennemis[0] = 0
+            perso2 = 1
 
     draw_tiles(ground) #affiche le niveau
     afficheScore("Score")
@@ -300,6 +312,6 @@ while loop==True:
     #mechants.update()
     #mechants.draw(window)
     pygame.display.update() #mets à jour la fenetre graphique
-    clock.tick(30)
+    clock.tick(10)
 pygame.quit()
 
