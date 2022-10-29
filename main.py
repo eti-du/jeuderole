@@ -93,7 +93,7 @@ def draw_panel():#µ
     window.blit(font.render("Niveau : "+str(player.niveau), True, (230, 230, 230)),(20,tiles_ymax*TILE_SIZE+140))
     window.blit(font.render("Nom : "+str(player.nom), True, (230, 230, 230)),(20,tiles_ymax*TILE_SIZE+180))
 
-def draw_left_panel(text):
+def draw_left_panel(text):#µ cont
     """
     affichage du panneau de gauche
     """
@@ -211,7 +211,7 @@ class Magicien(Personnage):
         méthode de l'attaque du magicien sur un autre personnage :
         inflige des dégats à l'adversaire s'il est vivant et si le magicien dispose assez de mana, 
         incrémente le nombre de points d’expérience correspondant aux dégâts infligés, 
-        retire de la vie au méchant et diminue le mana
+        retire de la vie à l'advervaire et diminue le mana
         """
         degats=randint(1,4)*self.niveau*2
         draw_left_panel(str(degats) + " dégats infligés du magicien sur "+adversaire.nom)
@@ -222,31 +222,29 @@ class Magicien(Personnage):
         if not adversaire.estVivant():#µimpr
             self.augmenterMana()
 
-def duel(combattant,mechant):
+def duel(combattant,adversaire):
     #combat entre deux personnages
     i = 0
-    while mechant.estVivant() and combattant.estVivant() or i>200:
-        combattant.combat(mechant)
-        pygame.display.update()
-        pygame.time.wait(1000)
-        pygame.draw.rect(window,(90,0,0),(10,window_y-64,800,50))
-        mechant.combat(combattant)
-        pygame.display.update()
-        pygame.time.wait(1000)
-        pygame.draw.rect(window,(110,0,0),(10,window_y-64,800,50))
+    while adversaire.estVivant() and combattant.estVivant() or i>200:
+        combattant.combat(adversaire)
+        pygame.display.update()#µ impr
+        pygame.time.wait(1000)#µ impr
+        pygame.draw.rect(window,(90,0,0),(10,window_y-64,800,50))#µ impr
+        adversaire.combat(combattant)
+        pygame.display.update()#µ impr
+        pygame.time.wait(1000)#µ impr
+        pygame.draw.rect(window,(110,0,0),(10,window_y-64,800,50))#µ impr
         i += 1
     if combattant.estVivant():
         draw_left_panel(combattant.nom +" a gagné")
-        pygame.display.update()
-        pygame.time.wait(2000)
+        pygame.display.update()#µ impr
+        pygame.time.wait(2000)#µ impr
         return True
-    draw_left_panel(mechant.nom+" a gagné")
-    pygame.display.update()
-    pygame.time.wait(2000)
+    draw_left_panel(adversaire.nom+" a gagné")#µ impr
+    pygame.display.update()#µ impr
+    pygame.time.wait(2000)#µ impr
     return False
     
-
-#==Fin personnages==
 collisions = find_collisions()#trouve les collisions du niveau
 tiles = load_tiles(TILE_SIZE) #Charge les images dans la liste des images des tuiles
 
@@ -260,14 +258,7 @@ perso6 = Personnage("Le Chat",10,100,1,[10,8],TILE_SIZE,join(dirname(__file__),"
 perso6 = Personnage("Max",10,100,1,[11,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 characters = [player,perso2,perso3,perso4,perso5,perso6]
 ennemis = [perso2,perso4]
-"""
-aventuriers = pygame.sprite.Group()
-aventuriers.add(player)
-aventuriers.add(perso3)
 
-mechants = pygame.sprite.Group()
-mechants.add(perso2)
-"""
 loop=True
 while loop==True:
     for event in pygame.event.get():
