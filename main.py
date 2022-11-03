@@ -1,10 +1,12 @@
+#coding:utf-8
 """
 Programme d'un jeu de rôle
 """
 import pygame
 from os.path import join,dirname
 from random import randint
-from assets.map import ground,layer_1
+from assets.map import ground,layer_1,layer_2
+from assets.tilecollisions import collision as tilecollisions
 
 #initialisation
 TILE_SIZE = 64   #definition du dessin (carré)
@@ -25,12 +27,15 @@ tiles_ymax = min(14,window_y//TILE_SIZE-3) #longueur du niveau
 offset_x = tiles_xmax//2
 offset_y = tiles_ymax//2
 
+mainscreenpart_background = pygame.Surface((tiles_xmax*TILE_SIZE,tiles_ymax*TILE_SIZE),flags=pygame.SRCALPHA)
+mainscreenpart_foreground = pygame.Surface((tiles_xmax*TILE_SIZE,tiles_ymax*TILE_SIZE),flags=pygame.SRCALPHA)
+
 def find_collisions():
     collisions = []
     for i in range(len(ground)):
         ligne = []
         for j in range(len(ground[0])):
-            if 112<=ground[i][j]<=131 or 56<=ground[i][j]<=75 or 168<=ground[i][j]<=187 or 224<=ground[i][j]<=242:
+            if tilecollisions[ground[i][j]] <= 0 and tilecollisions[layer_1[i][j]] <= 0 and tilecollisions[layer_2[i][j]] <= 0:
                 ligne.append(0)
             else:
                 ligne.append(1)
@@ -51,35 +56,33 @@ def load_tiles(TILE_SIZE):
     for y in range(0, size[1]//tile_size):
         for x in range(0, size[0]//tile_size):
             tiles.append(pygame.transform.scale(image.subsurface(x*tile_size, y*tile_size, tile_size, tile_size),(TILE_SIZE,TILE_SIZE)))
+    tiles.append(pygame.Surface((0,0)))
     return tiles
 
-def draw_tiles(ground):
+def create_ground(layer):
+    surface = pygame.Surface((TILE_SIZE*len(layer[0]),(TILE_SIZE*len(layer[0]))),flags=pygame.SRCALPHA)
+    for y in range(len(layer)):
+        for x in range(len(layer[0])):
+            surface.blit(tiles[layer[y][x]],(x*TILE_SIZE,y*TILE_SIZE))
+    return surface
+
+def draw_tiles():
     """
     fonction qui affiche le terrain à partir de la matrice "ground"
-
-    a = player.offset_y (début de la boucle pour)
-    si la longueur du niveau est inférieur à a plus la longueur maximale de tuiles placable
-    (si le joueur arrive à la fin du monde)
-    alors a = longueur du niveau moins longueur maximale de tuiles
-    si a >= 0
-    alors a = player.offset_y
-    si a < 0 (si le joueur est au début du monde)
-    alors a = 0
-    b = a + tiles_ymax (fin de la boucle pour)
     """
     window.fill((0,0,0))
-    for_1 = max(min(player.offset_y,len(ground) - tiles_ymax),-10)
-    for_2 = max(min(player.offset_x,len(ground[0]) - tiles_xmax),-10)
-    for y in range(for_1,min(len(ground),for_1+tiles_ymax)):
-        for x in range(for_2,min(len(ground[0]),for_2+tiles_xmax)):
-            window.blit(tiles[ground[y][x]],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
-            if len(layer_1)>y and len(layer_1[0])>x and layer_1[y][x]>0:
-                window.blit(tiles[layer_1[y][x]],((x-for_2)*TILE_SIZE,(y-for_1)*TILE_SIZE))
+    mainscreenpart_background.fill((0,0,0,0))#µ simp blit directly the scaled layers
+    mainscreenpart_foreground.fill((0,0,0,0))
+    mainscreenpart_background.blit(ground_srf,(-player.offset_x*TILE_SIZE,-player.offset_y*TILE_SIZE))
+    mainscreenpart_foreground.blit(layer_1_srf,(-player.offset_x*TILE_SIZE,-player.offset_y*TILE_SIZE))
+    mainscreenpart_foreground.blit(layer_2_srf,(-player.offset_x*TILE_SIZE,-player.offset_y*TILE_SIZE))
+    window.blit(mainscreenpart_background,(0,0))
     for i in range(1,len(characters)):
         if player.offset_x+tiles_xmax >= characters[i].x >= player.offset_x and player.offset_y+tiles_ymax >=characters[i].y >= player.offset_y:
             window.blit(characters[i].image,((-player.offset_x+characters[i].x)*TILE_SIZE,(-player.offset_y+characters[i].y)*TILE_SIZE))
     window.blit(player.image,((tiles_xmax//2)*TILE_SIZE,(tiles_ymax//2)*TILE_SIZE))
-    
+    window.blit(mainscreenpart_foreground,(0,0))
+
     pygame.draw.rect(window,(231,231,231),(tiles_xmax*64,0,15,window_y))
     pygame.draw.rect(window,(231,231,231),(0,tiles_ymax*64,window_x,15))
     pygame.draw.rect(window,(0,0,0),(tiles_xmax*64+7,0,3,window_y+8))
@@ -97,7 +100,8 @@ def draw_left_panel(text):#µ cont
     """
     affichage du panneau de gauche
     """
-    window.blit(font.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
+    #window.blit(font.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
+    window.blit(fontmn.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
 
 class Moveable_element:
     """
@@ -111,7 +115,7 @@ class Moveable_element:
         self.collisions=collisions
         self.x,self.y=position
         self.rightdirection = True
-        self.offset_x,self.offset_y = 0,0
+        self.offset_x,self.offset_y = 0,1
 
     def collision(self,x,y):
         if (self.collisions[int(self.offset_y+self.y+y)][int(self.offset_x+self.x+x)]==0):
@@ -168,6 +172,8 @@ class Personnage(Moveable_element):
         self.niveau = self.xp//10+1#µimpr
     def estVivant(self):
         return self.vie>0
+    #def __repr__(self):
+    #    return "("+str(self.niveau)+") "+self.nom+" à "+str(self.vie)+" points de vie, soit est à "+str(100*self.vie//self.maxVie)+"% vivant et à "+str(self.xp)+" points d'expériences"
 
 class Guerrier(Personnage):
     def __init__(self,nom,vie,xp,niveau,force,position,size,img,collisions):
@@ -229,11 +235,11 @@ def duel(combattant,adversaire):
         combattant.combat(adversaire)
         pygame.display.update()#µ impr
         pygame.time.wait(1000)#µ impr
-        pygame.draw.rect(window,(90,0,0),(10,window_y-64,800,50))#µ impr
+        pygame.draw.rect(window,(90,0,0),(tiles_xmax*TILE_SIZE+15,20,800,50))#µ impr
         adversaire.combat(combattant)
         pygame.display.update()#µ impr
         pygame.time.wait(1000)#µ impr
-        pygame.draw.rect(window,(110,0,0),(10,window_y-64,800,50))#µ impr
+        pygame.draw.rect(window,(110,0,0),(tiles_xmax*TILE_SIZE+15,20,800,50))#µ impr
         i += 1
     if combattant.estVivant():
         draw_left_panel(combattant.nom +" a gagné")
@@ -247,24 +253,28 @@ def duel(combattant,adversaire):
     
 collisions = find_collisions()#trouve les collisions du niveau
 tiles = load_tiles(TILE_SIZE) #Charge les images dans la liste des images des tuiles
+ground_srf=create_ground(ground)
+layer_1_srf=create_ground(layer_1)
+layer_2_srf=create_ground(layer_2)
 
 #création des personnages
-player = Guerrier("Ash",1,100,1,1,False,TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso2 = Guerrier("Gandalf",1,100,1,1,[8,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+player = Guerrier("Ash",100,1,1,1,False,TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso2 = Guerrier("Gandalf",50,1,1,1,[8,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso4 = Magicien("Gentil",10,100,1,1,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso5 = Personnage("EhOh",10,100,1,[9,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso6 = Personnage("Le Chat",10,100,1,[10,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso6 = Personnage("Max",10,100,1,[11,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso4 = Magicien("Gentil",100,1,1,10,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso5 = Personnage("EhOh",100,1,10,[9,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso6 = Personnage("Le Chat",100,1,10,[10,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso6 = Personnage("Max",100,1,10,[11,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+
 characters = [player,perso2,perso3,perso4,perso5,perso6]
-ennemis = [perso2,perso4]
+ennemis = [perso2,perso4,perso6]
 
 loop=True
 while loop==True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: # Ferme la fenetre (croix rouge)
             loop = False
-    keys = pygame.key.get_pressed()
+    keys = pygame.key.get_pressed()# Détecte les touches pressées
     if keys[pygame.K_UP] or keys[pygame.K_z]:
         player.haut()
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
@@ -276,15 +286,17 @@ while loop==True:
     if keys[pygame.K_ESCAPE]:
         loop = False
     for i in range(len(ennemis)):
-        if player.offset_x == ennemis[i].x and player.offset_y == ennemis[i].y:
+        if player.offset_x+tiles_xmax//2 == ennemis[i].x and player.offset_y+tiles_ymax//2 == ennemis[i].y:
             if duel(player,ennemis[i]):
                 ennemis[i].x,ennemis[i].y = 1,1
                 ennemis.pop(i)
+                break
             else:
-                player.offset_x = 5
-                player.offset_y = 5            
-    draw_tiles(ground) #affiche le niveau
-    draw_left_panel("Score")
+                player.ajouterVie(100)
+                player.offset_x = 0
+                player.offset_y = 0           
+    draw_tiles() #affiche le niveau
+    draw_left_panel("Score")#affiche les informations de gauche
     pygame.display.update() #mets à jour la fenetre graphique
     clock.tick(10)
 pygame.quit()
