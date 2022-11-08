@@ -60,7 +60,7 @@ def load_tiles(TILE_SIZE):
     return tiles
 
 def create_ground(layer):
-    surface = pygame.Surface((TILE_SIZE*len(layer[0]),(TILE_SIZE*len(layer[0]))),flags=pygame.SRCALPHA)
+    surface = pygame.Surface((TILE_SIZE*len(layer[0]),(TILE_SIZE*len(layer))),flags=pygame.SRCALPHA)
     for y in range(len(layer)):
         for x in range(len(layer[0])):
             surface.blit(tiles[layer[y][x]],(x*TILE_SIZE,y*TILE_SIZE))
