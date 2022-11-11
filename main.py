@@ -13,7 +13,7 @@ TILE_SIZE = 64   #definition du dessin (carré)
 pygame.init()
 window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN)
 pygame.display.set_caption("Role Playing Game | The Mysterious Hill")
-font = pygame.font.Font(join(dirname(__file__),'assets/font/CourierNew.ttf'), 40)
+font = pygame.font.Font(join(dirname(__file__),'assets/font/CourierNew.ttf'), 35)
 fontmn = pygame.font.Font(None, 18)
 fontbold = pygame.font.Font(None, 120)
 window_x,window_y = pygame.display.Info().current_w,pygame.display.Info().current_h #taille de la fenêtre
@@ -101,7 +101,8 @@ def draw_left_panel(text):#µ cont
     affichage du panneau de gauche
     """
     #window.blit(font.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
-    window.blit(fontmn.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
+    window.blit(font.render("x : "+str(player.offset_x+tiles_xmax//2)+" y : "+str(player.offset_y+tiles_ymax//2), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
+    window.blit(fontmn.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,70))
 
 class Moveable_element:
     """
@@ -115,10 +116,10 @@ class Moveable_element:
         self.collisions=collisions
         self.x,self.y=position
         self.rightdirection = True
-        self.offset_x,self.offset_y = 0,1
+        self.offset_x,self.offset_y = 11-tiles_xmax//2,13-tiles_ymax//2
 
     def collision(self,x,y):
-        if (self.collisions[int(self.offset_y+self.y+y)][int(self.offset_x+self.x+x)]==0):
+        if (self.collisions[int(self.offset_y+tiles_ymax//2+y)][int(self.offset_x+tiles_xmax//2+x)]==0):
             return False
         return True
 
@@ -149,8 +150,6 @@ class Personnage(Moveable_element):
     Classe de tous les personnages
     """
     def __init__(self,nom,vie,xp,niveau,position,size,img,collisions):#µ simpl size,collisions
-        if position == False:#µ simpl
-            position = (tiles_xmax//2,tiles_ymax//2)#µ simpl
         Moveable_element.__init__(self,nom,position,size,img,collisions)
         self.nom=nom
         self.vie=vie
@@ -235,11 +234,11 @@ def duel(combattant,adversaire):
         combattant.combat(adversaire)
         pygame.display.update()#µ impr
         pygame.time.wait(1000)#µ impr
-        pygame.draw.rect(window,(90,0,0),(tiles_xmax*TILE_SIZE+15,20,800,50))#µ impr
+        pygame.draw.rect(window,(90,0,0),(tiles_xmax*TILE_SIZE+15,70,800,50))#µ impr
         adversaire.combat(combattant)
         pygame.display.update()#µ impr
         pygame.time.wait(1000)#µ impr
-        pygame.draw.rect(window,(110,0,0),(tiles_xmax*TILE_SIZE+15,20,800,50))#µ impr
+        pygame.draw.rect(window,(110,0,0),(tiles_xmax*TILE_SIZE+15,70,800,50))#µ impr
         i += 1
     if combattant.estVivant():
         draw_left_panel(combattant.nom +" a gagné")
@@ -258,16 +257,16 @@ layer_1_srf=create_ground(layer_1)
 layer_2_srf=create_ground(layer_2)
 
 #création des personnages
-player = Guerrier("Ash",100,1,1,1,False,TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso2 = Guerrier("Gandalf",50,1,1,1,[8,3],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[3,5],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso4 = Magicien("Gentil",100,1,1,10,[8,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso5 = Personnage("EhOh",100,1,10,[9,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso6 = Personnage("Le Chat",100,1,10,[10,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso6 = Personnage("Max",100,1,10,[11,8],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+player = Guerrier("Ash",100,1,1,1,[0,0],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso2 = Guerrier("Gandalf",50,1,1,1,[27,18],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[45,18],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso4 = Magicien("Gentil",100,1,1,10,[32,98],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso5 = Personnage("EhOh",100,1,10,[52,11],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso6 = Personnage("Le Chat",100,1,10,[32,12],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso7 = Personnage("Max",100,1,10,[52,40],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 
-characters = [player,perso2,perso3,perso4,perso5,perso6]
-ennemis = [perso2,perso4,perso6]
+characters = [player,perso2,perso3,perso4,perso5,perso6,perso7]
+ennemis = [perso2,perso4]
 
 loop=True
 while loop==True:
