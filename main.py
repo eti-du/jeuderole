@@ -2,6 +2,7 @@
 """
 Programme d'un jeu de rôle
 """
+#importation des bibliothèques
 import pygame
 from os.path import join,dirname
 from random import randint
@@ -13,8 +14,9 @@ TILE_SIZE = 64   #definition du dessin (carré)
 pygame.init()
 window = pygame.display.set_mode((0,0),flags=pygame.FULLSCREEN)
 pygame.display.set_caption("Role Playing Game | The Mysterious Hill")
-font = pygame.font.Font(join(dirname(__file__),'assets/font/CourierNew.ttf'), 35)
-fontmn = pygame.font.Font(None, 18)
+font    = pygame.font.Font(join(dirname(__file__),'assets/font/CourierNew.ttf'), 35)
+font_lf = pygame.font.Font(join(dirname(__file__),'assets/font/futura_heavy.ttf'), 20)
+fontmn  = pygame.font.Font(None, 18)
 fontbold = pygame.font.Font(None, 120)
 window_x,window_y = pygame.display.Info().current_w,pygame.display.Info().current_h #taille de la fenêtre
 window.blit(fontbold.render("CHARGEMENT …", True, (113,52,134)),(window_x//4,window_y//2-50)) #écran de chargement
@@ -29,6 +31,8 @@ offset_y = tiles_ymax//2
 
 mainscreenpart_background = pygame.Surface((tiles_xmax*TILE_SIZE,tiles_ymax*TILE_SIZE),flags=pygame.SRCALPHA)
 mainscreenpart_foreground = pygame.Surface((tiles_xmax*TILE_SIZE,tiles_ymax*TILE_SIZE),flags=pygame.SRCALPHA)
+
+messages = ["_________________________"] #texte à afficher à gauche de l'écran
 
 def find_collisions():
     collisions = []
@@ -78,7 +82,7 @@ def draw_tiles():
     mainscreenpart_foreground.blit(layer_2_srf,(-player.offset_x*TILE_SIZE,-player.offset_y*TILE_SIZE))
     window.blit(mainscreenpart_background,(0,0))
     for i in range(1,len(characters)):
-        if player.offset_x+tiles_xmax >= characters[i].x >= player.offset_x and player.offset_y+tiles_ymax >=characters[i].y >= player.offset_y:
+        if player.offset_x+tiles_xmax > characters[i].x >= player.offset_x and player.offset_y+tiles_ymax >characters[i].y >= player.offset_y:
             window.blit(characters[i].image,((-player.offset_x+characters[i].x)*TILE_SIZE,(-player.offset_y+characters[i].y)*TILE_SIZE))
     window.blit(player.image,((tiles_xmax//2)*TILE_SIZE,(tiles_ymax//2)*TILE_SIZE))
     window.blit(mainscreenpart_foreground,(0,0))
@@ -96,13 +100,21 @@ def draw_panel():#µ
     window.blit(font.render("Niveau : "+str(player.niveau), True, (230, 230, 230)),(20,tiles_ymax*TILE_SIZE+140))
     window.blit(font.render("Nom : "+str(player.nom), True, (230, 230, 230)),(20,tiles_ymax*TILE_SIZE+180))
 
-def draw_left_panel(text):#µ cont
+def draw_right_panel(messages):
     """
-    affichage du panneau de gauche
+    affichage du panneau de droite
     """
-    #window.blit(font.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
-    window.blit(font.render("x : "+str(player.offset_x+tiles_xmax//2)+" y : "+str(player.offset_y+tiles_ymax//2), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,20))
-    window.blit(fontmn.render(str(text), True, (20, 235, 134)),(tiles_xmax*TILE_SIZE+20,70))
+    pygame.draw.rect(window,(0,0,0),(tiles_xmax*TILE_SIZE+15,0,window_x,tiles_ymax*TILE_SIZE)) #efface la zone de droite
+    window.blit(font.render("x : "+str(player.offset_x+tiles_xmax//2)+" y : "+str(player.offset_y+tiles_ymax//2), True, (20, 135, 234)),(tiles_xmax*TILE_SIZE+20,20)) #affiche les coordonnées
+    for i in range(len(messages)): #affiche tous les messages de la liste, un message par ligne
+        window.blit(font_lf.render(messages[(i+1)*-1], True, (20, 135, 234)),(tiles_xmax*TILE_SIZE+20,70+i*30))
+    pygame.display.update()#actualise l'écran #µ impr up nly area
+
+def newmessage(text):#ajoute un nouveau message
+    messages.append(str(text))
+    if len(messages) > 15:
+        messages.pop(0)
+    draw_right_panel(messages)
 
 class Moveable_element:
     """
@@ -193,7 +205,7 @@ class Guerrier(Personnage):
         self.monterExperience(degats)
         if not adversaire.estVivant():
             self.augmenterForce()
-        draw_left_panel(str(degats)+" dégats infligés à "+adversaire.nom)
+        newmessage(str(degats)+" dégats infligés à "+adversaire.nom)
 
 class Magicien(Personnage):
     def __init__(self,nom,vie,xp,niveau,mana,position,size,img,collisions):
@@ -219,7 +231,7 @@ class Magicien(Personnage):
         retire de la vie à l'advervaire et diminue le mana
         """
         degats=randint(1,4)*self.niveau*2
-        draw_left_panel(str(degats) + " dégats infligés du magicien sur "+adversaire.nom)
+        newmessage(str(degats) + " dégats infligés à "+adversaire.nom)
         if adversaire.estVivant() and self.mana>0:#µ simp
             adversaire.vie -= degats
             self.monterExperience(degats)
@@ -232,24 +244,16 @@ def duel(combattant,adversaire):
     i = 0
     while adversaire.estVivant() and combattant.estVivant() or i>200:
         combattant.combat(adversaire)
-        pygame.display.update()#µ impr
-        pygame.time.wait(1000)#µ impr
-        pygame.draw.rect(window,(90,0,0),(tiles_xmax*TILE_SIZE+15,70,800,50))#µ impr
+        pygame.time.wait(1000)
         adversaire.combat(combattant)
-        pygame.display.update()#µ impr
-        pygame.time.wait(1000)#µ impr
-        pygame.draw.rect(window,(110,0,0),(tiles_xmax*TILE_SIZE+15,70,800,50))#µ impr
+        pygame.time.wait(1000)
         i += 1
     if combattant.estVivant():
-        draw_left_panel(combattant.nom +" a gagné")
-        pygame.display.update()#µ impr
-        pygame.time.wait(2000)#µ impr
+        newmessage(combattant.nom +" a gagné")
         return True
-    draw_left_panel(adversaire.nom+" a gagné")#µ impr
-    pygame.display.update()#µ impr
-    pygame.time.wait(2000)#µ impr
+    newmessage(adversaire.nom+" a gagné")
     return False
-    
+
 collisions = find_collisions()#trouve les collisions du niveau
 tiles = load_tiles(TILE_SIZE) #Charge les images dans la liste des images des tuiles
 ground_srf=create_ground(ground)
@@ -258,9 +262,9 @@ layer_2_srf=create_ground(layer_2)
 
 #création des personnages
 player = Guerrier("Ash",100,1,1,1,[0,0],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso2 = Guerrier("Gandalf",50,1,1,1,[27,18],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso2 = Guerrier("Gandalf",25,1,1,1,[27,18],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso3 = Personnage("Gandalf_lefrerejumau",10,100,1,[45,18],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
-perso4 = Magicien("Gentil",100,1,1,10,[32,98],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
+perso4 = Magicien("Gentil",150,18,1,10,[32,98],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso5 = Personnage("EhOh",100,1,10,[52,11],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso6 = Personnage("Le Chat",100,1,10,[32,12],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
 perso7 = Personnage("Max",100,1,10,[52,40],TILE_SIZE,join(dirname(__file__),"data/perso.png"),collisions)
@@ -289,13 +293,14 @@ while loop==True:
             if duel(player,ennemis[i]):
                 ennemis[i].x,ennemis[i].y = 1,1
                 ennemis.pop(i)
-                break
             else:
                 player.ajouterVie(100)
                 player.offset_x = 0
-                player.offset_y = 0           
+                player.offset_y = 0
+            messages = [messages[-1]]
+            break
     draw_tiles() #affiche le niveau
-    draw_left_panel("Score")#affiche les informations de gauche
+    draw_right_panel(messages)
     pygame.display.update() #mets à jour la fenetre graphique
     clock.tick(10)
 pygame.quit()
